@@ -1,7 +1,20 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, 'search_engine.db');
+let dbPath = path.resolve(__dirname, 'search_engine.db');
+
+// Vercel Serverless Functions have a read-only filesystem except for /tmp
+if (process.env.VERCEL === '1') {
+  const tmpPath = '/tmp/search_engine.db';
+  if (!fs.existsSync(tmpPath)) {
+    if (fs.existsSync(dbPath)) {
+      fs.copyFileSync(dbPath, tmpPath);
+    }
+  }
+  dbPath = tmpPath;
+}
+
 const db = new Database(dbPath);
 
 // Initialize tables
